@@ -1,11 +1,18 @@
 var rl, readline = require('readline');
 
+/** Creates and returns readline interface */
 var get_interface = function(stdin, stdout) {
   if (!rl) rl = readline.createInterface(stdin, stdout);
   else stdin.resume(); // interface exists
   return rl;
 }
 
+/**
+ * Prompts for user yes/no input
+ *
+ * @param {String} message The string to prompt the user
+ * @param {Function} callback The function that is called upon user input
+ */
 var confirm = exports.confirm = function(message, callback) {
 
   var question = {
@@ -23,6 +30,12 @@ var confirm = exports.confirm = function(message, callback) {
 
 };
 
+/**
+ * Prompts for multiple user inputs
+ *
+ * @param {Array} options The array of elements that requires user input
+ * @param {Function} callback The function that is called when all user input is collected
+ */
 var get = exports.get = function(options, callback) {
 
   if (!callback) return; // no point in continuing
@@ -35,11 +48,13 @@ var get = exports.get = function(options, callback) {
       stdout = process.stdout,
       fields = Object.keys(options);
 
+  /** Ends user interaction */
   var done = function() {
     close_prompt();
     callback(null, answers);
   }
 
+  /** Ends user interaction upon user input */
   var close_prompt = function() {
     stdin.pause();
     if (!rl) return;
@@ -47,6 +62,7 @@ var get = exports.get = function(options, callback) {
     rl = null;
   }
 
+  /** Returns default answer to a prompt */
   var get_default = function(key, partial_answers) {
     if (typeof options[key] == 'object')
       return typeof options[key].default == 'function' ? options[key].default(partial_answers) : options[key].default;
@@ -54,6 +70,7 @@ var get = exports.get = function(options, callback) {
       return options[key];
   }
 
+  /** Returns the value of reply */
   var guess_type = function(reply) {
 
     if (reply.trim() == '')
@@ -68,6 +85,7 @@ var get = exports.get = function(options, callback) {
     return reply;
   }
 
+  /** Checks if answer is the correct type */
   var validate = function(key, answer) {
 
     if (typeof answer == 'undefined')
@@ -85,6 +103,7 @@ var get = exports.get = function(options, callback) {
 
   }
 
+  /** Prints error message is user enters invalid input */
   var show_error = function(key) {
     var str = options[key].error ? options[key].error : 'Invalid value.';
 
@@ -94,6 +113,7 @@ var get = exports.get = function(options, callback) {
     stdout.write("\033[31m" + str + "\033[0m" + "\n");
   }
 
+  /** Prints prompt depending on prompt type (single message or multiple message)*/
   var show_message = function(key) {
     var msg = '';
 
@@ -139,6 +159,11 @@ var get = exports.get = function(options, callback) {
     stdin.on('keypress', keypress_callback);
   }
 
+  /** 
+   * Checks if reply is undefined or defined. 
+   * If answer is invalid, show error message
+   * If answer is valid, print the next prompt
+   */
   var check_reply = function(index, curr_key, fallback, reply) {
     var answer = guess_type(reply);
     var return_answer = (typeof answer != 'undefined') ? answer : fallback;
@@ -149,6 +174,7 @@ var get = exports.get = function(options, callback) {
       show_error(curr_key) || next_question(index); // repeats current
   }
 
+  /** Checks if dependencies are met */
   var dependencies_met = function(conds) {
     for (var key in conds) {
       var cond = conds[key];
@@ -167,6 +193,7 @@ var get = exports.get = function(options, callback) {
     return true;
   }
 
+  /** Prints the next prompt in the array of prompts */
   var next_question = function(index, prev_key, answer) {
     if (prev_key) answers[prev_key] = answer;
 
