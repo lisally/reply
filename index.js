@@ -237,6 +237,7 @@ var get = exports.get = function(options, callback) {
 
   }
 
+  /** Promts to the next question in the option array*/
   rl = get_interface(stdin, stdout);
   next_question(0);
 
